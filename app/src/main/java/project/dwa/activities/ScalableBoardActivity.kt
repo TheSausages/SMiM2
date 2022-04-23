@@ -1,5 +1,6 @@
 package project.dwa.activities
 
+import android.app.AlertDialog
 import android.content.res.Resources
 import android.graphics.drawable.Drawable
 import android.os.Bundle
@@ -127,9 +128,7 @@ class ScalableBoardActivity : AppCompatActivity() {
 
                         // Check the win condition - we use it here so it only check after a successful placement
                         // We send the indexes too, in order to not search the array again
-                        if (checkWinConditionForElement(currentPlayer, boardElementsArray.indexOf(row), row.indexOf(item))) {
-                            print("a")
-                        }
+                        checkWinConditionForElement(currentPlayer, boardElementsArray.indexOf(row), row.indexOf(item))
 
                         // If placed, go to next player
                         setNextPlayer()
@@ -158,8 +157,8 @@ class ScalableBoardActivity : AppCompatActivity() {
 
     private fun setCurrentPlayerName() {
         // Find the view with player names and set the text
-        val textView: TextView = findViewById(R.id.round_player_name_id)
-        textView.text = playerArray[currentPlayerArrayIndex].name
+        val playerNameView: TextView = findViewById(R.id.round_player_name_id)
+        playerNameView.text = playerArray[currentPlayerArrayIndex].name
     }
 
     // Check if the active player is a machine
@@ -180,7 +179,7 @@ class ScalableBoardActivity : AppCompatActivity() {
         }
     }
 
-    private fun checkWinConditionForElement(player: Player, rowIndex: Int, columnIndex: Int): Boolean {
+    private fun checkWinConditionForElement(player: Player, rowIndex: Int, columnIndex: Int) {
         // Create the necessary variables
         // If the value is negative, give 0
         val rowStartIndex = (rowIndex - elementsToWin).coerceAtLeast(0)
@@ -199,7 +198,7 @@ class ScalableBoardActivity : AppCompatActivity() {
             }
 
             if (numInRow == elementsToWin) {
-                return true
+                showWinPopup()
             }
         }
 
@@ -214,7 +213,7 @@ class ScalableBoardActivity : AppCompatActivity() {
             }
 
             if (numInColumn == elementsToWin) {
-                return true
+                showWinPopup()
             }
         }
 
@@ -230,7 +229,7 @@ class ScalableBoardActivity : AppCompatActivity() {
             }
 
             if (numInDiagonal == elementsToWin) {
-                return true
+                showWinPopup()
             }
 
             diagonalRowIndex++
@@ -249,14 +248,16 @@ class ScalableBoardActivity : AppCompatActivity() {
             }
 
             if (numInAntiDiagonal == elementsToWin) {
-                return true
+                showWinPopup()
             }
 
             antiDiagonalRowIndex++
             antiDiagonalColumnIndex--
         } while (antiDiagonalRowIndex < rowEndIndex && antiDiagonalColumnIndex > columnStartingIndex)
+    }
 
-        return false
+    private fun showWinPopup() {
+        WinnerPopUpDialog(playerArray[currentPlayerArrayIndex].name).show(supportFragmentManager, "Winner-Popup")
     }
 
     private fun getElementSize(): Int {

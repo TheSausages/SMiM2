@@ -2,4 +2,10 @@
     <string name="app_name">Project 2</string>
     <string name="round_of_player_text">Round of Player</string>
     <string name="default_player_name_text">None</string>
+    <string name="main_menu_title">Tic Tac Toe</string>
+    <string name="play_another_text">Play With Another</string>
+    <string name="play_machine_text">Play With Machine</string>
+    <string name="default_winner_text">%s Won!</string>
+    <string name="go_to_menu_text">Just Return</string>
+    <string name="save_and_go_to_menu_text">Save and Return</string>
 </resources>

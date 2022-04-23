@@ -20,5 +20,6 @@
         </activity>
 
         <activity android:name=".activities.ScalableBoardActivity" />
+        <activity android:name=".activities.MainMenuActivity" />
     </application>
 </manifest>

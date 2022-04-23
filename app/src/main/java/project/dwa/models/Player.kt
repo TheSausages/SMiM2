@@ -2,6 +2,7 @@ package project.dwa.models
 
 import android.os.Parcel
 import android.os.Parcelable
+import project.dwa.R
 
 // Player object, not a machine by default
 class Player(
@@ -32,8 +33,7 @@ class Player(
         parcel.readString()!!,
         parcel.readInt(),
         parcel.readByte() != 0.toByte()
-    ) {
-    }
+    )
 
     override fun writeToParcel(parcel: Parcel, flags: Int) {
         parcel.writeString(name)
@@ -52,6 +52,14 @@ class Player(
 
         override fun newArray(size: Int): Array<Player?> {
             return arrayOfNulls(size)
+        }
+
+        fun createMachinePlayer(): Player {
+            return Player("Machine", R.drawable.gear, true)
+        }
+
+        fun createNormalPlayer(name: String, symbol: Int): Player {
+            return Player(name, symbol, false)
         }
     }
 }
