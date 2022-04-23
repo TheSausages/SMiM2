@@ -13,6 +13,7 @@ class MainActivity : AppCompatActivity() {
         val boardIntent = Intent(this, ScalableBoardActivity::class.java)
 
         boardIntent.putExtra("size", 10)
+        boardIntent.putExtra("elementsToWin", 4)
 
         boardIntent.putParcelableArrayListExtra("players", arrayListOf(
             Player("Player 1", R.drawable.x, false),

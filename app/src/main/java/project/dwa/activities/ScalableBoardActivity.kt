@@ -20,7 +20,8 @@ class ScalableBoardActivity : AppCompatActivity() {
     private lateinit var NOTHING_STATE: Drawable.ConstantState
 
     private var boardSize by Delegates.notNull<Int>()
-    private lateinit var boardElementsArray: Array<Array<ViewPlayerConnector?>>
+    private var elementsToWin by Delegates.notNull<Int>()
+    private lateinit var boardElementsArray: Array<Array<ViewPlayerConnector>>
     private lateinit var playerArray: ArrayList<Player>
     private var currentPlayerArrayIndex: Int = 0
 
@@ -39,6 +40,9 @@ class ScalableBoardActivity : AppCompatActivity() {
         // Get the size of the board
         boardSize = intent.extras?.getInt("size")!!
 
+        // Get how many symbols are needed to win
+        elementsToWin = intent.extras?.getInt("elementsToWin")!!
+
         // Get the player information
         playerArray = intent.extras?.getParcelableArrayList("players")!!
 
@@ -50,7 +54,7 @@ class ScalableBoardActivity : AppCompatActivity() {
         val elementSize = getElementSize()
 
         // Initialize the elements arrau
-        boardElementsArray = Array(boardSize) { Array(boardSize) { null } }
+        boardElementsArray = Array(boardSize) { Array(boardSize) { ViewPlayerConnector() } }
 
         // Saved state is null only when the activity is started for the first time
         if (savedInstanceState == null) {
@@ -79,7 +83,7 @@ class ScalableBoardActivity : AppCompatActivity() {
                 for (column in 0 until boardSize) {
                     // Same like when the bundle is null, but the Id and Player exist
                     val existingBoardElement = paredArray[row][column]
-                    val existingBoardElementView = createBoardElement(existingBoardElement.id, existingBoardElement.player, elementSize)
+                    val existingBoardElementView = createBoardElement(existingBoardElement.viewId, existingBoardElement.player, elementSize)
 
                     boardElementsArray[row][column] = ViewPlayerConnector(existingBoardElementView.id, existingBoardElement.player)
 
@@ -108,29 +112,33 @@ class ScalableBoardActivity : AppCompatActivity() {
     private fun playerTab(view: View): Boolean {
         // Parse the view and find the current player
         val img = view as ImageView
-        val currentPLayer: Player = playerArray[currentPlayerArrayIndex]
+        val currentPlayer: Player = playerArray[currentPlayerArrayIndex]
 
         // Only allow to place on free fields
         if (img.drawable.constantState == NOTHING_STATE) {
             // Assign the player to the field - we use normal loops to use labeled break
-            assignLoop@ for (row in boardElementsArray) {
+            for (row in boardElementsArray) {
                 for (item in row) {
-                    if (item?.id == img.id) {
-                        item.player = currentPLayer
+                    if (item.viewId == img.id) {
+                        item.player = currentPlayer
 
-                        break@assignLoop
+                        // Set the players image to the element
+                        view.setImageResource(currentPlayer.symbol)
+
+                        // Check the win condition - we use it here so it only check after a successful placement
+                        // We send the indexes too, in order to not search the array again
+                        if (checkWinConditionForElement(currentPlayer, boardElementsArray.indexOf(row), row.indexOf(item))) {
+                            print("a")
+                        }
+
+                        // If placed, go to next player
+                        setNextPlayer()
+
+                        // Return true if placement was successful
+                        return true
                     }
                 }
             }
-
-            // Set the players image to the element
-            view.setImageResource(currentPLayer.symbol)
-
-            // If placed, go to next player
-            setNextPlayer()
-
-            // Return true if placement was successful
-            return true
         }
 
         // Return false if it wasn't successful
@@ -166,10 +174,89 @@ class ScalableBoardActivity : AppCompatActivity() {
                 val randomRow = Random.nextInt(0, boardSize)
 
                 // If the view is empty, place the symbol and go out of loop
-                val randomlyFoundView: ImageView = findViewById(boardElementsArray[randomCol][randomRow]!!.id)
+                val randomlyFoundView: ImageView = findViewById(boardElementsArray[randomCol][randomRow].viewId)
                 if (playerTab(randomlyFoundView)) break
             } while (true)
         }
+    }
+
+    private fun checkWinConditionForElement(player: Player, rowIndex: Int, columnIndex: Int): Boolean {
+        // Create the necessary variables
+        // If the value is negative, give 0
+        val rowStartIndex = (rowIndex - elementsToWin).coerceAtLeast(0)
+        val rowEndIndex = (rowIndex + elementsToWin).coerceAtMost(boardSize)
+        val columnStartingIndex = (columnIndex - elementsToWin).coerceAtLeast(0)
+        val columnEndIndex = (columnIndex + elementsToWin).coerceAtMost(boardSize)
+
+        // Search in row
+        var numInRow = 0
+        for (rowElementIndex in rowStartIndex until rowEndIndex) {
+            // Check if the symbol also belong to the player
+            if (player.equals(boardElementsArray[rowElementIndex][columnIndex].player)) {
+                numInRow++
+            } else {
+                numInRow = 0
+            }
+
+            if (numInRow == elementsToWin) {
+                return true
+            }
+        }
+
+        // Search in column
+        var numInColumn = 0
+        for (columnElementIndex in columnStartingIndex until columnEndIndex) {
+            // Check if the symbol also belong to the player
+            if (player.equals(boardElementsArray[rowIndex][columnElementIndex].player)) {
+                numInColumn++
+            } else {
+                numInColumn = 0
+            }
+
+            if (numInColumn == elementsToWin) {
+                return true
+            }
+        }
+
+        // Search in diagonal
+        var numInDiagonal = 0
+        var diagonalRowIndex = rowStartIndex
+        var diagonalColumnIndex = columnStartingIndex
+        do {
+            if (player.equals(boardElementsArray[diagonalRowIndex][diagonalColumnIndex].player)) {
+                numInDiagonal++
+            } else {
+                numInDiagonal = 0
+            }
+
+            if (numInDiagonal == elementsToWin) {
+                return true
+            }
+
+            diagonalRowIndex++
+            diagonalColumnIndex++
+        } while (diagonalRowIndex < rowEndIndex && diagonalColumnIndex < columnEndIndex)
+
+        // Search in anti-diagonal
+        var numInAntiDiagonal = 0
+        var antiDiagonalRowIndex = rowStartIndex
+        var antiDiagonalColumnIndex = columnEndIndex - 1
+        do {
+            if (player.equals(boardElementsArray[antiDiagonalRowIndex][antiDiagonalColumnIndex].player)) {
+                numInAntiDiagonal++
+            } else {
+                numInAntiDiagonal = 0
+            }
+
+            if (numInAntiDiagonal == elementsToWin) {
+                return true
+            }
+
+            antiDiagonalRowIndex++
+            antiDiagonalColumnIndex--
+        } while (antiDiagonalRowIndex < rowEndIndex && antiDiagonalColumnIndex > columnStartingIndex)
+
+        return false
     }
 
     private fun getElementSize(): Int {

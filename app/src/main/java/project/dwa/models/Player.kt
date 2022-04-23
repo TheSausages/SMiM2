@@ -9,6 +9,25 @@ class Player(
     val symbol: Int,
     val isMachine: Boolean = false
 ): Parcelable {
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (javaClass != other?.javaClass) return false
+
+        other as Player
+
+        if (name != other.name) return false
+        if (symbol != other.symbol) return false
+
+        return true
+    }
+
+    override fun hashCode(): Int {
+        var result = name.hashCode()
+        result = 31 * result + symbol
+        result = 31 * result + isMachine.hashCode()
+        return result
+    }
+
     constructor(parcel: Parcel) : this(
         parcel.readString()!!,
         parcel.readInt(),

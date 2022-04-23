@@ -3,7 +3,9 @@ package project.dwa.models
 import android.os.Parcel
 import android.os.Parcelable
 
-data class ViewPlayerConnector(val id: Int, var player: Player?): Parcelable {
+data class ViewPlayerConnector(val viewId: Int, var player: Player?): Parcelable {
+    constructor() : this(-1, null)
+
     constructor(parcel: Parcel) : this(
         parcel.readInt(),
         parcel.readParcelable(Player::class.java.classLoader)
@@ -11,7 +13,7 @@ data class ViewPlayerConnector(val id: Int, var player: Player?): Parcelable {
     }
 
     override fun writeToParcel(parcel: Parcel, flags: Int) {
-        parcel.writeInt(id)
+        parcel.writeInt(viewId)
         parcel.writeParcelable(player, flags)
     }
 
