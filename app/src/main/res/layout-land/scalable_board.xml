@@ -27,8 +27,8 @@
         android:id="@+id/round_of_player_text_id"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="100dp"
-        android:layout_marginEnd="56dp"
+        android:layout_marginTop="108dp"
+        android:layout_marginEnd="48dp"
         android:text="@string/round_of_player_text"
         android:textSize="20sp"
         app:layout_constraintEnd_toEndOf="parent"
@@ -38,13 +38,21 @@
         android:id="@+id/round_player_name_id"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="8dp"
-        android:layout_marginEnd="56dp"
+        android:layout_marginTop="44dp"
+        android:layout_marginEnd="48dp"
         android:text="@string/default_player_name_text"
         android:textSize="40sp"
-        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/round_of_player_text_id"
-        app:layout_constraintVertical_bias="0.197" />
+        app:layout_constraintTop_toBottomOf="@+id/round_of_player_text_id" />
 
+    <TextView
+        android:id="@+id/round_of_player_wins_text_id"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="20dp"
+        android:layout_marginEnd="68dp"
+        android:text="@string/number_of_wins_text"
+        android:textSize="14sp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/round_player_name_id" />
 </androidx.constraintlayout.widget.ConstraintLayout>

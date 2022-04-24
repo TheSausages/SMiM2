@@ -13,7 +13,6 @@ import project.dwa.models.GameHistoryItem
 import java.io.File
 import java.io.FileOutputStream
 import java.lang.Exception
-import java.nio.charset.Charset
 
 
 class WinnerPopUpDialog(val historyItem: GameHistoryItem): DialogFragment() {
@@ -33,8 +32,8 @@ class WinnerPopUpDialog(val historyItem: GameHistoryItem): DialogFragment() {
                     it.finish()
                 }
 
-                // Button for just returning to the menu
-                .setNegativeButton(R.string.go_to_menu_text) { _, _ -> it.finish() }
+                // Reset and do nothing
+                .setNegativeButton(R.string.restart_text) { _, _ -> saveToHistory() }
 
             val dialog = builder.show()
             val messageText = dialog.findViewById<View>(android.R.id.message) as TextView

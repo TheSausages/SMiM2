@@ -97,7 +97,7 @@ class ScalableBoardActivity : AppCompatActivity() {
         }
 
         // Last, set the first player name as the current player
-        setCurrentPlayerName()
+        setCurrentPlayerInfo()
     }
 
     // Used to save board state between reloads
@@ -109,6 +109,12 @@ class ScalableBoardActivity : AppCompatActivity() {
         outState.putParcelableArrayList("states", ArrayList(parsingArray))
 
         super.onSaveInstanceState(outState)
+    }
+
+    private fun tabAndBeginNextRound(view: View) {
+        if (playerTab(view)) {
+            setNextPlayer()
+        }
     }
 
     private fun playerTab(view: View): Boolean {
@@ -131,9 +137,6 @@ class ScalableBoardActivity : AppCompatActivity() {
                         // We send the indexes too, in order to not search the array again
                         checkWinCondition(currentPlayer, boardElementsArray.indexOf(row), row.indexOf(item))
 
-                        // If placed, go to next player
-                        setNextPlayer()
-
                         // Return true if placement was successful
                         return true
                     }
@@ -146,28 +149,33 @@ class ScalableBoardActivity : AppCompatActivity() {
     }
 
     private fun setNextPlayer() {
-        // Add one and then module with the size of the array so we don't go over the index
-        currentPlayerArrayIndex = ((currentPlayerArrayIndex + 1) % playerArray.size)
+        goToNextPlayer()
+
+        // if machine, do it's round
+        ifMachinePlayRound()
 
         // Set the players name
-        setCurrentPlayerName()
-
-        // Check if it's a machine
-        checkIfMachinePlayer()
+        setCurrentPlayerInfo()
     }
 
-    private fun setCurrentPlayerName() {
+    private fun setCurrentPlayerInfo() {
+        val currentPlayer: Player = playerArray[currentPlayerArrayIndex]
+
         // Find the view with player names and set the text
         val playerNameView: TextView = findViewById(R.id.round_player_name_id)
-        playerNameView.text = playerArray[currentPlayerArrayIndex].name
+        playerNameView.text = currentPlayer.name
+
+        // Find the view with player number of wins and set the text
+        val playerWinsView: TextView = findViewById(R.id.round_of_player_wins_text_id)
+        playerWinsView.text = resources.getString(R.string.number_of_wins_text, currentPlayer.winsCounter)
     }
 
     // Check if the active player is a machine
-    private fun checkIfMachinePlayer() {
-        val possibleMachinePLayer = playerArray[currentPlayerArrayIndex]
+    private fun ifMachinePlayRound() {
+        val possibleMachinePlayer = playerArray[currentPlayerArrayIndex]
 
         // Check if the player is a Machine
-        if (possibleMachinePLayer.isMachine) {
+        if (possibleMachinePlayer.isMachine) {
             // If yes, find random column and row
             do {
                 val randomCol = Random.nextInt(0, boardSize)
@@ -177,6 +185,9 @@ class ScalableBoardActivity : AppCompatActivity() {
                 val randomlyFoundView: ImageView = findViewById(boardElementsArray[randomCol][randomRow].viewId)
                 if (playerTab(randomlyFoundView)) break
             } while (true)
+
+            // If Machine did it's round, go to next
+            goToNextPlayer()
         }
     }
 
@@ -260,6 +271,8 @@ class ScalableBoardActivity : AppCompatActivity() {
     private fun showWinPopup() {
         val currentPlayer = playerArray[currentPlayerArrayIndex]
 
+        currentPlayer.winsCounter++
+
         val playerArrayCopy = ArrayList(playerArray)
 
         playerArrayCopy.remove(currentPlayer)
@@ -267,6 +280,8 @@ class ScalableBoardActivity : AppCompatActivity() {
         WinnerPopUpDialog(
             GameHistoryItem(currentPlayer, playerArrayCopy)
         ).show(supportFragmentManager, "Winner-Popup")
+
+        clearTheBoard()
     }
 
     private fun getElementSize(): Int {
@@ -294,9 +309,23 @@ class ScalableBoardActivity : AppCompatActivity() {
         testView.setBackgroundResource(R.drawable.layout_border)
 
         // Register a click and use the playerTab method
-        testView.setOnClickListener { playerTab(it) }
+        testView.setOnClickListener { tabAndBeginNextRound(it) }
 
         // Return the view
         return testView
+    }
+
+    private fun clearTheBoard() {
+        boardElementsArray.forEach { row ->
+            row.forEach {
+                it.player = null
+                findViewById<ImageView>(it.viewId).setImageResource(R.drawable.nothing)
+            }
+        }
+    }
+
+    private fun goToNextPlayer() {
+        // Add one and then module with the size of the array so we don't go over the index
+        currentPlayerArrayIndex = ((currentPlayerArrayIndex + 1) % playerArray.size)
     }
 }
