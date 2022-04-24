@@ -21,5 +21,6 @@
 
         <activity android:name=".activities.ScalableBoardActivity" />
         <activity android:name=".activities.MainMenuActivity" />
+        <activity android:name=".activities.SeeHistoryActivity" />
     </application>
 </manifest>

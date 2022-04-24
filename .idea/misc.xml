@@ -3,12 +3,17 @@
   <component name="DesignSurface">
     <option name="filePathToZoomLevelMap">
       <map>
+        <entry key="..\:/programowanie/AndroidStudioProjects/Project2/app/src/main/res/drawable/game_history_element.xml" value="0.477" />
         <entry key="..\:/programowanie/AndroidStudioProjects/Project2/app/src/main/res/drawable/ic_launcher_background.xml" value="0.41" />
         <entry key="..\:/programowanie/AndroidStudioProjects/Project2/app/src/main/res/drawable/layout_border.xml" value="0.41" />
         <entry key="..\:/programowanie/AndroidStudioProjects/Project2/app/src/main/res/layout-land/activity_main.xml" value="0.12708333333333333" />
+        <entry key="..\:/programowanie/AndroidStudioProjects/Project2/app/src/main/res/layout-land/history.xml" value="0.27733686067019403" />
         <entry key="..\:/programowanie/AndroidStudioProjects/Project2/app/src/main/res/layout-land/main_menu.xml" value="0.2495590828924162" />
         <entry key="..\:/programowanie/AndroidStudioProjects/Project2/app/src/main/res/layout-land/scalable_board.xml" value="0.25" />
         <entry key="..\:/programowanie/AndroidStudioProjects/Project2/app/src/main/res/layout/activity_main.xml" value="0.495018115942029" />
+        <entry key="..\:/programowanie/AndroidStudioProjects/Project2/app/src/main/res/layout/history.xml" value="0.575" />
+        <entry key="..\:/programowanie/AndroidStudioProjects/Project2/app/src/main/res/layout/history_item.xml" value="0.33" />
+        <entry key="..\:/programowanie/AndroidStudioProjects/Project2/app/src/main/res/layout/history_item_landscape.xml" value="0.32760416666666664" />
         <entry key="..\:/programowanie/AndroidStudioProjects/Project2/app/src/main/res/layout/main_menu-portrait.xml" value="0.2947916666666667" />
         <entry key="..\:/programowanie/AndroidStudioProjects/Project2/app/src/main/res/layout/main_menu.xml" value="0.2947916666666667" />
         <entry key="..\:/programowanie/AndroidStudioProjects/Project2/app/src/main/res/layout/scalable_board.xml" value="0.33" />

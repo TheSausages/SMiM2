@@ -61,5 +61,9 @@ class Player(
         fun createNormalPlayer(name: String, symbol: Int): Player {
             return Player(name, symbol, false)
         }
+
+        fun createNormalPlayerWithNoSymbol(name: String): Player {
+            return Player(name, R.drawable.nothing, false)
+        }
     }
 }

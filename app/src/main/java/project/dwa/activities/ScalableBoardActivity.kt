@@ -1,6 +1,5 @@
 package project.dwa.activities
 
-import android.app.AlertDialog
 import android.content.res.Resources
 import android.graphics.drawable.Drawable
 import android.os.Bundle
@@ -12,6 +11,8 @@ import androidx.constraintlayout.helper.widget.Flow
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.content.res.ResourcesCompat
 import project.dwa.R
+import project.dwa.dialog.WinnerPopUpDialog
+import project.dwa.models.GameHistoryItem
 import project.dwa.models.ViewPlayerConnector
 import project.dwa.models.Player
 import kotlin.properties.Delegates
@@ -128,7 +129,7 @@ class ScalableBoardActivity : AppCompatActivity() {
 
                         // Check the win condition - we use it here so it only check after a successful placement
                         // We send the indexes too, in order to not search the array again
-                        checkWinConditionForElement(currentPlayer, boardElementsArray.indexOf(row), row.indexOf(item))
+                        checkWinCondition(currentPlayer, boardElementsArray.indexOf(row), row.indexOf(item))
 
                         // If placed, go to next player
                         setNextPlayer()
@@ -179,7 +180,7 @@ class ScalableBoardActivity : AppCompatActivity() {
         }
     }
 
-    private fun checkWinConditionForElement(player: Player, rowIndex: Int, columnIndex: Int) {
+    private fun checkWinCondition(player: Player, rowIndex: Int, columnIndex: Int) {
         // Create the necessary variables
         // If the value is negative, give 0
         val rowStartIndex = (rowIndex - elementsToWin).coerceAtLeast(0)
@@ -257,7 +258,15 @@ class ScalableBoardActivity : AppCompatActivity() {
     }
 
     private fun showWinPopup() {
-        WinnerPopUpDialog(playerArray[currentPlayerArrayIndex].name).show(supportFragmentManager, "Winner-Popup")
+        val currentPlayer = playerArray[currentPlayerArrayIndex]
+
+        val playerArrayCopy = ArrayList(playerArray)
+
+        playerArrayCopy.remove(currentPlayer)
+
+        WinnerPopUpDialog(
+            GameHistoryItem(currentPlayer, playerArrayCopy)
+        ).show(supportFragmentManager, "Winner-Popup")
     }
 
     private fun getElementSize(): Int {

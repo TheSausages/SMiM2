@@ -8,12 +8,11 @@ import project.dwa.R
 import project.dwa.models.Player
 
 class MainMenuActivity: AppCompatActivity() {
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
         val size = 10
-        val elementsToWin = 4
+        val elementsToWin = 5
 
         // Use the menu layout
         setContentView(R.layout.main_menu)
@@ -48,6 +47,12 @@ class MainMenuActivity: AppCompatActivity() {
             ))
 
             startActivity(boardIntent)
+        }
+
+        // Set the click listener for the 'See history' Button
+        val SeeHistoryButton: Button = findViewById(R.id.see_history_button_id)
+        SeeHistoryButton.setOnClickListener {
+            startActivity(Intent(this, SeeHistoryActivity::class.java))
         }
     }
 }
