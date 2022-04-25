@@ -249,6 +249,7 @@ class ScalableBoardActivity : AppCompatActivity() {
     }
 
     private fun clearTheBoard() {
+        boardObj.numberOfPlaced = 0
         boardObj.boardElementsArray.forEach { row ->
             row.forEach {
                 it.player = null

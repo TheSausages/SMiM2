@@ -7,7 +7,7 @@ class Board(
     val elementsToWin: Int,
     var numberOfPlaced: Int = 0
 ) {
-    val boardElementsArray: Array<Array<ViewPlayerConnector>>
+    var boardElementsArray: Array<Array<ViewPlayerConnector>>
 
     init {
         boardElementsArray = BoardFactory.createEmptyBoard(boardSize)
@@ -21,9 +21,9 @@ class Board(
         // Create the necessary variables
         // If the value is negative, give 0
         val rowStartIndex = (rowIndex - elementsToWin).coerceAtLeast(0)
-        val rowEndIndex = (rowIndex + elementsToWin).coerceAtMost(boardSize)
+        val rowEndIndex = (rowIndex + elementsToWin).coerceAtMost(boardSize - 1)
         val columnStartingIndex = (columnIndex - elementsToWin).coerceAtLeast(0)
-        val columnEndIndex = (columnIndex + elementsToWin).coerceAtMost(boardSize)
+        val columnEndIndex = (columnIndex + elementsToWin).coerceAtMost(boardSize - 1)
 
         // Search in row
         var numInRow = 0
@@ -35,7 +35,7 @@ class Board(
                 numInRow = 0
             }
 
-            if (numInRow == elementsToWin) {
+            if (numInRow >= elementsToWin) {
                 return true
             }
         }
@@ -50,7 +50,7 @@ class Board(
                 numInColumn = 0
             }
 
-            if (numInColumn == elementsToWin) {
+            if (numInColumn >= elementsToWin) {
                 return true
             }
         }
@@ -66,7 +66,7 @@ class Board(
                 numInDiagonal = 0
             }
 
-            if (numInDiagonal == elementsToWin) {
+            if (numInDiagonal >= elementsToWin) {
                 return true
             }
 
@@ -77,7 +77,7 @@ class Board(
         // Search in anti-diagonal
         var numInAntiDiagonal = 0
         var antiDiagonalRowIndex = rowStartIndex
-        var antiDiagonalColumnIndex = columnEndIndex - 1
+        var antiDiagonalColumnIndex = columnEndIndex
         do {
             if (player.equals(boardElementsArray[antiDiagonalRowIndex][antiDiagonalColumnIndex].player)) {
                 numInAntiDiagonal++
@@ -85,7 +85,7 @@ class Board(
                 numInAntiDiagonal = 0
             }
 
-            if (numInAntiDiagonal == elementsToWin) {
+            if (numInAntiDiagonal >= elementsToWin) {
                 return true
             }
 

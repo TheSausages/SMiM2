@@ -12,7 +12,7 @@ import project.dwa.models.ViewPlayerConnector
 class BoardFactory {
     companion object BoardFactory {
         fun createEmptyBoard(boardSize: Int): Array<Array<ViewPlayerConnector>> {
-            return Array(boardSize) { Array(boardSize) { ViewPlayerConnector() } }
+            return Array(boardSize) { Array(boardSize) { ViewPlayerConnector(-1, null) } }
         }
 
         fun createBoardElement(
