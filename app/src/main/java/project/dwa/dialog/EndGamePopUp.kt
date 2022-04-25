@@ -15,14 +15,14 @@ import java.io.FileOutputStream
 import java.lang.Exception
 
 
-class WinnerPopUpDialog(val historyItem: GameHistoryItem): DialogFragment() {
+class EndGamePopUp(val historyItem: GameHistoryItem, val message: String): DialogFragment() {
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
         super.onCreateDialog(savedInstanceState)
 
         return activity?.let {
             // Start building the Dialog
             val builder = AlertDialog.Builder(it)
-            builder.setMessage(resources.getString(R.string.default_winner_text, historyItem.winner.name))
+            builder.setMessage(message)
                 // Button for saving the data
                 .setPositiveButton(
                     R.string.save_and_go_to_menu_text

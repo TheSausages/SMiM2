@@ -37,7 +37,7 @@ class HistoryListAdapter(
 
         // Write text to each textview
         (holder.historyIV.getChildAt(0) as TextView).text = item.getFormattedPLayDate()
-        (holder.historyIV.getChildAt(2) as TextView).text = item.winner.name
+        (holder.historyIV.getChildAt(2) as TextView).text = item.getWinnerName()
         (holder.historyIV.getChildAt(4) as TextView).text = item.getOtherPlayersString()
     }
 

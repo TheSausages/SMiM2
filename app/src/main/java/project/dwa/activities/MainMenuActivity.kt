@@ -6,6 +6,7 @@ import android.widget.Button
 import androidx.appcompat.app.AppCompatActivity
 import project.dwa.R
 import project.dwa.models.Player
+import kotlin.system.exitProcess
 
 class MainMenuActivity: AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -50,9 +51,15 @@ class MainMenuActivity: AppCompatActivity() {
         }
 
         // Set the click listener for the 'See history' Button
-        val SeeHistoryButton: Button = findViewById(R.id.see_history_button_id)
-        SeeHistoryButton.setOnClickListener {
+        val seeHistoryButton: Button = findViewById(R.id.see_history_button_id)
+        seeHistoryButton.setOnClickListener {
             startActivity(Intent(this, SeeHistoryActivity::class.java))
+        }
+
+        val exitButton: Button = findViewById(R.id.exit_button_id)
+        exitButton.setOnClickListener {
+            finish()
+            exitProcess(0)
         }
     }
 }

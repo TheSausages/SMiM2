@@ -7,7 +7,7 @@ import java.util.*
 import kotlin.collections.ArrayList
 
 class GameHistoryItem(
-    val winner: Player,
+    val winner: Player?,
     val otherPlayers: List<Player>,
     val playDate: Date = Calendar.getInstance().time
 ) {
@@ -30,6 +30,10 @@ class GameHistoryItem(
         }
     }
 
+    fun getWinnerName(): String {
+        return winner?.name ?: "Draw"
+    }
+
     fun getFormattedPLayDate(): String {
         return dateFormatter.format(playDate)
     }
@@ -39,11 +43,11 @@ class GameHistoryItem(
     }
 
     fun toPrettyString(): String {
-        return "${dateFormatter.format(playDate)} ${winner.name} ${otherPlayers.joinToString("") { player -> player.name }}"
+        return "${dateFormatter.format(playDate)} ${getWinnerName()} ${otherPlayers.joinToString("") { player -> player.name }}"
     }
 
     override fun toString(): String {
-        return "${dateFormatter.format(playDate)}$GAME_HISTORY_ITEM_DATA_SPLITTER${winner.name}$GAME_HISTORY_ITEM_DATA_SPLITTER${otherPlayers.joinToString("") { player -> player.name }}"
+        return "${dateFormatter.format(playDate)}$GAME_HISTORY_ITEM_DATA_SPLITTER${getWinnerName()}$GAME_HISTORY_ITEM_DATA_SPLITTER${otherPlayers.joinToString("") { player -> player.name }}"
     }
 
     fun toStringWithNewline(): String {

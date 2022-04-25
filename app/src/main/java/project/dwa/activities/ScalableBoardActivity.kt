@@ -4,14 +4,17 @@ import android.content.res.Resources
 import android.graphics.drawable.Drawable
 import android.os.Bundle
 import android.view.View
-import android.widget.ImageView
+import android.widget.ImageButton
 import android.widget.TextView
+import androidx.annotation.VisibleForTesting
 import androidx.appcompat.app.AppCompatActivity
 import androidx.constraintlayout.helper.widget.Flow
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.content.res.ResourcesCompat
 import project.dwa.R
-import project.dwa.dialog.WinnerPopUpDialog
+import project.dwa.configuration.BoardFactory
+import project.dwa.dialog.EndGamePopUp
+import project.dwa.models.Board
 import project.dwa.models.GameHistoryItem
 import project.dwa.models.ViewPlayerConnector
 import project.dwa.models.Player
@@ -21,9 +24,7 @@ import kotlin.random.Random
 class ScalableBoardActivity : AppCompatActivity() {
     private lateinit var NOTHING_STATE: Drawable.ConstantState
 
-    private var boardSize by Delegates.notNull<Int>()
-    private var elementsToWin by Delegates.notNull<Int>()
-    private lateinit var boardElementsArray: Array<Array<ViewPlayerConnector>>
+    private lateinit var boardObj: Board
     private lateinit var playerArray: ArrayList<Player>
     private var currentPlayerArrayIndex: Int = 0
 
@@ -40,10 +41,10 @@ class ScalableBoardActivity : AppCompatActivity() {
         NOTHING_STATE = ResourcesCompat.getDrawable(resources, R.drawable.nothing, this.theme)?.constantState!!
 
         // Get the size of the board
-        boardSize = intent.extras?.getInt("size")!!
+        val boardSize = intent.extras?.getInt("size")!!
 
         // Get how many symbols are needed to win
-        elementsToWin = intent.extras?.getInt("elementsToWin")!!
+        val elementsToWin = intent.extras?.getInt("elementsToWin")!!
 
         // Get the player information
         playerArray = intent.extras?.getParcelableArrayList("players")!!
@@ -52,27 +53,33 @@ class ScalableBoardActivity : AppCompatActivity() {
         val boardFlow: Flow = findViewById(R.id.scalable_board_flow_id)
         boardFlow.setMaxElementsWrap(boardSize)
 
+        // Initialize the elements array
+        boardObj = Board(boardSize, elementsToWin)
+
         // Get the size of a single element of the board can take
         val elementSize = getElementSize()
-
-        // Initialize the elements arrau
-        boardElementsArray = Array(boardSize) { Array(boardSize) { ViewPlayerConnector() } }
 
         // Saved state is null only when the activity is started for the first time
         if (savedInstanceState == null) {
             for (row in 0 until boardSize) {
                 for (column in 0 until boardSize) {
                     // Create a view with a new index and no attached player
-                    val emptyBoardElementView = createBoardElement(View.generateViewId(), null, elementSize)
+                    val emptyBoardElementView = BoardFactory.createBoardElement(
+                        this,
+                        View.generateViewId(),
+                        elementSize,
+                        ::tabAndBeginNextRound,
+                        null
+                    )
 
                     // Add the data to the array
-                    boardElementsArray[row][column] = ViewPlayerConnector(emptyBoardElementView.id, null)
+                    boardObj.boardElementsArray[row][column] = ViewPlayerConnector(emptyBoardElementView.id, null)
 
-                    // Add the view as an element of the ConstraintLayout Flow
-                    boardFlow.referencedIds += emptyBoardElementView.id
-
-                    // And add it to the main view
+                    // Add the view to the board
                     board.addView(emptyBoardElementView)
+
+                    // Add the view to the flow
+                    boardFlow.addView(emptyBoardElementView)
                 }
             }
         } else {
@@ -85,13 +92,21 @@ class ScalableBoardActivity : AppCompatActivity() {
                 for (column in 0 until boardSize) {
                     // Same like when the bundle is null, but the Id and Player exist
                     val existingBoardElement = paredArray[row][column]
-                    val existingBoardElementView = createBoardElement(existingBoardElement.viewId, existingBoardElement.player, elementSize)
+                    val existingBoardElementView = BoardFactory.createBoardElement(
+                        this,
+                        existingBoardElement.viewId,
+                        elementSize,
+                        ::tabAndBeginNextRound,
+                        existingBoardElement.player
+                    )
 
-                    boardElementsArray[row][column] = ViewPlayerConnector(existingBoardElementView.id, existingBoardElement.player)
+                    boardObj.boardElementsArray[row][column] = ViewPlayerConnector(existingBoardElementView.id, existingBoardElement.player)
 
-                    boardFlow.referencedIds += existingBoardElementView.id
-
+                    // Add the view to the board
                     board.addView(existingBoardElementView)
+
+                    // Add the view to the flow
+                    boardFlow.addView(existingBoardElementView)
                 }
             }
         }
@@ -103,7 +118,7 @@ class ScalableBoardActivity : AppCompatActivity() {
     // Used to save board state between reloads
     override fun onSaveInstanceState(outState: Bundle) {
         // Because we cannot save 2dim array, we need to transform it into 1dim array
-        val parsingArray = boardElementsArray.flatten()
+        val parsingArray = boardObj.boardElementsArray.flatten()
 
         // And save it
         outState.putParcelableArrayList("states", ArrayList(parsingArray))
@@ -119,13 +134,13 @@ class ScalableBoardActivity : AppCompatActivity() {
 
     private fun playerTab(view: View): Boolean {
         // Parse the view and find the current player
-        val img = view as ImageView
+        val img = view as ImageButton
         val currentPlayer: Player = playerArray[currentPlayerArrayIndex]
 
         // Only allow to place on free fields
         if (img.drawable.constantState == NOTHING_STATE) {
             // Assign the player to the field - we use normal loops to use labeled break
-            for (row in boardElementsArray) {
+            for (row in boardObj.boardElementsArray) {
                 for (item in row) {
                     if (item.viewId == img.id) {
                         item.player = currentPlayer
@@ -135,7 +150,15 @@ class ScalableBoardActivity : AppCompatActivity() {
 
                         // Check the win condition - we use it here so it only check after a successful placement
                         // We send the indexes too, in order to not search the array again
-                        checkWinCondition(currentPlayer, boardElementsArray.indexOf(row), row.indexOf(item))
+                        if (boardObj.checkWinCondition(currentPlayer, boardObj.boardElementsArray.indexOf(row), row.indexOf(item))) {
+                            showWinPopup(resources.getString(R.string.default_winner_text, playerArray[currentPlayerArrayIndex].name))
+                        }
+
+                        // Check fi draw
+                        boardObj.numberOfPlaced++
+                        if (boardObj.checkIfDraw()) {
+                            showDrawPopUp()
+                        }
 
                         // Return true if placement was successful
                         return true
@@ -178,11 +201,11 @@ class ScalableBoardActivity : AppCompatActivity() {
         if (possibleMachinePlayer.isMachine) {
             // If yes, find random column and row
             do {
-                val randomCol = Random.nextInt(0, boardSize)
-                val randomRow = Random.nextInt(0, boardSize)
+                val randomCol = Random.nextInt(0, boardObj.boardSize)
+                val randomRow = Random.nextInt(0, boardObj.boardSize)
 
                 // If the view is empty, place the symbol and go out of loop
-                val randomlyFoundView: ImageView = findViewById(boardElementsArray[randomCol][randomRow].viewId)
+                val randomlyFoundView: ImageButton = findViewById(boardObj.boardElementsArray[randomCol][randomRow].viewId)
                 if (playerTab(randomlyFoundView)) break
             } while (true)
 
@@ -191,95 +214,26 @@ class ScalableBoardActivity : AppCompatActivity() {
         }
     }
 
-    private fun checkWinCondition(player: Player, rowIndex: Int, columnIndex: Int) {
-        // Create the necessary variables
-        // If the value is negative, give 0
-        val rowStartIndex = (rowIndex - elementsToWin).coerceAtLeast(0)
-        val rowEndIndex = (rowIndex + elementsToWin).coerceAtMost(boardSize)
-        val columnStartingIndex = (columnIndex - elementsToWin).coerceAtLeast(0)
-        val columnEndIndex = (columnIndex + elementsToWin).coerceAtMost(boardSize)
 
-        // Search in row
-        var numInRow = 0
-        for (rowElementIndex in rowStartIndex until rowEndIndex) {
-            // Check if the symbol also belong to the player
-            if (player.equals(boardElementsArray[rowElementIndex][columnIndex].player)) {
-                numInRow++
-            } else {
-                numInRow = 0
-            }
+    internal fun showWinPopup(message: String) {
+        val winner = playerArray[currentPlayerArrayIndex]
 
-            if (numInRow == elementsToWin) {
-                showWinPopup()
-            }
-        }
-
-        // Search in column
-        var numInColumn = 0
-        for (columnElementIndex in columnStartingIndex until columnEndIndex) {
-            // Check if the symbol also belong to the player
-            if (player.equals(boardElementsArray[rowIndex][columnElementIndex].player)) {
-                numInColumn++
-            } else {
-                numInColumn = 0
-            }
-
-            if (numInColumn == elementsToWin) {
-                showWinPopup()
-            }
-        }
-
-        // Search in diagonal
-        var numInDiagonal = 0
-        var diagonalRowIndex = rowStartIndex
-        var diagonalColumnIndex = columnStartingIndex
-        do {
-            if (player.equals(boardElementsArray[diagonalRowIndex][diagonalColumnIndex].player)) {
-                numInDiagonal++
-            } else {
-                numInDiagonal = 0
-            }
-
-            if (numInDiagonal == elementsToWin) {
-                showWinPopup()
-            }
-
-            diagonalRowIndex++
-            diagonalColumnIndex++
-        } while (diagonalRowIndex < rowEndIndex && diagonalColumnIndex < columnEndIndex)
-
-        // Search in anti-diagonal
-        var numInAntiDiagonal = 0
-        var antiDiagonalRowIndex = rowStartIndex
-        var antiDiagonalColumnIndex = columnEndIndex - 1
-        do {
-            if (player.equals(boardElementsArray[antiDiagonalRowIndex][antiDiagonalColumnIndex].player)) {
-                numInAntiDiagonal++
-            } else {
-                numInAntiDiagonal = 0
-            }
-
-            if (numInAntiDiagonal == elementsToWin) {
-                showWinPopup()
-            }
-
-            antiDiagonalRowIndex++
-            antiDiagonalColumnIndex--
-        } while (antiDiagonalRowIndex < rowEndIndex && antiDiagonalColumnIndex > columnStartingIndex)
-    }
-
-    private fun showWinPopup() {
-        val currentPlayer = playerArray[currentPlayerArrayIndex]
-
-        currentPlayer.winsCounter++
+        winner.winsCounter++
 
         val playerArrayCopy = ArrayList(playerArray)
 
-        playerArrayCopy.remove(currentPlayer)
+        playerArrayCopy.remove(winner)
 
-        WinnerPopUpDialog(
-            GameHistoryItem(currentPlayer, playerArrayCopy)
-        ).show(supportFragmentManager, "Winner-Popup")
+        showPopUp(message, GameHistoryItem(winner, playerArrayCopy), "Winner-Popup")
+    }
+
+    private fun showDrawPopUp() = showPopUp(resources.getString(R.string.default_draw_text), GameHistoryItem(null, playerArray), "Draw-Popup")
+
+    private fun showPopUp(message: String, historyItem: GameHistoryItem, tag: String) {
+        EndGamePopUp(
+            historyItem,
+            message
+        ).show(supportFragmentManager, tag)
 
         clearTheBoard()
     }
@@ -291,35 +245,14 @@ class ScalableBoardActivity : AppCompatActivity() {
         val width = Resources.getSystem().displayMetrics.widthPixels
 
         // Get the smaller one and divide it by the number of elements for the size of each element
-        return (minOf(height, width) / boardSize)
-    }
-
-    // Create an element of the board (ImageView) using provided data
-    private fun createBoardElement(id: Int, player: Player?, elementSize: Int): ImageView {
-        val testView = ImageView(this)
-        testView.id = id
-
-        // Max sizes cannot be bigger than the element size
-        testView.maxWidth = elementSize
-        testView.maxHeight = elementSize
-        testView.adjustViewBounds = true
-
-        // Add the symbol of the player (od nothing by default) and add the border
-        testView.setImageResource(player?.symbol ?: R.drawable.nothing)
-        testView.setBackgroundResource(R.drawable.layout_border)
-
-        // Register a click and use the playerTab method
-        testView.setOnClickListener { tabAndBeginNextRound(it) }
-
-        // Return the view
-        return testView
+        return (minOf(height, width) / boardObj.boardSize)
     }
 
     private fun clearTheBoard() {
-        boardElementsArray.forEach { row ->
+        boardObj.boardElementsArray.forEach { row ->
             row.forEach {
                 it.player = null
-                findViewById<ImageView>(it.viewId).setImageResource(R.drawable.nothing)
+                findViewById<ImageButton>(it.viewId).setImageResource(R.drawable.nothing)
             }
         }
     }

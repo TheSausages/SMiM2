@@ -7,6 +7,7 @@
     <string name="play_machine_text">Play With Machine</string>
     <string name="see_history_text">See History</string>
     <string name="default_winner_text">%s Won!</string>
+    <string name="default_draw_text">Draw!</string>
     <string name="restart_text">Play Again</string>
     <string name="save_and_go_to_menu_text">Return to Menu</string>
     <string name="game_history_title_text">Game History</string>
@@ -14,4 +15,5 @@
     <string name="history_default_winner_text">Default Winner text</string>
     <string name="history_default_others_text">Default Others Text</string>
     <string name="number_of_wins_text">Wins in row: %d</string>
+    <string name="exit_button_text">Exit</string>
 </resources>
