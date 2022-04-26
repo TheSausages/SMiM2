@@ -19,11 +19,11 @@ class Board(
 
     fun checkWinCondition(player: Player, rowIndex: Int, columnIndex: Int): Boolean {
         // Create the necessary variables
-        // If the value is negative, give 0
-        val rowStartIndex = (rowIndex - elementsToWin).coerceAtLeast(0)
-        val rowEndIndex = (rowIndex + elementsToWin).coerceAtMost(boardSize - 1)
-        val columnStartingIndex = (columnIndex - elementsToWin).coerceAtLeast(0)
-        val columnEndIndex = (columnIndex + elementsToWin).coerceAtMost(boardSize - 1)
+        // If the value is negative, give 0, if over the last index make it the last index
+        val rowStartIndex = if (rowIndex - elementsToWin < 0) 0 else rowIndex - elementsToWin
+        val rowEndIndex = if (rowIndex + elementsToWin > boardSize - 1) boardSize - 1 else rowIndex + elementsToWin
+        val columnStartingIndex = if (columnIndex - elementsToWin < 0) 0 else columnIndex - elementsToWin
+        val columnEndIndex = if (columnIndex + elementsToWin > boardSize - 1) boardSize - 1 else columnIndex + elementsToWin
 
         // Search in row
         var numInRow = 0
@@ -55,10 +55,16 @@ class Board(
             }
         }
 
+
         // Search in diagonal
+        val diagonalRowStartIndex = if (rowIndex - elementsToWin < 0) 0 else rowIndex - elementsToWin
+        val diagonalRowEndIndex = if (rowIndex + elementsToWin > boardSize - 1) boardSize - 1 else rowIndex + elementsToWin
+        val diagonalColumnStartingIndex = if (columnIndex - elementsToWin < 0) 0 else columnIndex - elementsToWin
+        val diagonalColumnEndIndex = if (columnIndex + elementsToWin > boardSize - 1) boardSize - 1 else columnIndex + elementsToWin
+
         var numInDiagonal = 0
-        var diagonalRowIndex = rowStartIndex
-        var diagonalColumnIndex = columnStartingIndex
+        var diagonalRowIndex = diagonalRowStartIndex
+        var diagonalColumnIndex = diagonalColumnStartingIndex
         do {
             if (player.equals(boardElementsArray[diagonalRowIndex][diagonalColumnIndex].player)) {
                 numInDiagonal++
@@ -72,12 +78,18 @@ class Board(
 
             diagonalRowIndex++
             diagonalColumnIndex++
-        } while (diagonalRowIndex < rowEndIndex && diagonalColumnIndex < columnEndIndex)
+        } while (diagonalRowIndex <= diagonalRowEndIndex && diagonalColumnIndex <= diagonalColumnEndIndex)
+
 
         // Search in anti-diagonal
+        val antiDiagonalRowStartIndex = rowAntiDiag(rowIndex, columnIndex)
+        val antiDiagonalRowEndIndex = if (rowIndex + elementsToWin > boardSize - 1) boardSize - 1 else rowIndex + elementsToWin
+        val antiDiagonalColumnStartingIndex = if (columnIndex - elementsToWin < 0) 0 else columnIndex - elementsToWin
+        val antiDiagonalColumnEndIndex = if (columnIndex + elementsToWin > boardSize - 1) boardSize - 1 else columnIndex + elementsToWin
+
         var numInAntiDiagonal = 0
-        var antiDiagonalRowIndex = rowStartIndex
-        var antiDiagonalColumnIndex = columnEndIndex
+        var antiDiagonalRowIndex = antiDiagonalRowStartIndex
+        var antiDiagonalColumnIndex = antiDiagonalColumnEndIndex
         do {
             if (player.equals(boardElementsArray[antiDiagonalRowIndex][antiDiagonalColumnIndex].player)) {
                 numInAntiDiagonal++
@@ -91,8 +103,23 @@ class Board(
 
             antiDiagonalRowIndex++
             antiDiagonalColumnIndex--
-        } while (antiDiagonalRowIndex < rowEndIndex && antiDiagonalColumnIndex > columnStartingIndex)
+        } while (antiDiagonalRowIndex <= antiDiagonalRowEndIndex && antiDiagonalColumnIndex >= antiDiagonalColumnStartingIndex)
 
         return false
+    }
+
+    private fun rowAntiDiag(rowNum: Int, colNum: Int): Int {
+        var colNumVar = colNum
+
+        for (row in rowNum downTo 0) {
+            println("$row $colNumVar")
+            if (colNumVar >= (boardSize - 1) || colNumVar <= 0  || row >= (boardSize - 1) || row <= 0) {
+                return row
+            }
+
+            colNumVar++
+        }
+
+        return rowNum
     }
 }
